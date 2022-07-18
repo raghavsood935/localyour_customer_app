@@ -31,8 +31,7 @@ class ProfileView extends HookWidget {
   launchURL(String url) async {
     if (await canLaunch(url)) {
       await launch(url);
-    }
-    else {
+    } else {
       throw 'Could not launch $url';
     }
   }
@@ -56,12 +55,14 @@ class ProfileView extends HookWidget {
     final homeProvider = useProvider(homeViewModelProvider);
     print(profile?.profileInfo?.customerPhone);
     Future<void> share() async {
-    await FlutterShare.share(
+      await FlutterShare.share(
           title: 'LocalYour',
           text: 'Download the LocalYour App Here !',
           linkUrl: 'https://localyour.com',
           chooserTitle: 'Share LocalYour With Your Contacts');
-    };
+    }
+
+    ;
 
     return Scaffold(
       backgroundColor: Color(0xfff0f1f0),
@@ -74,10 +75,7 @@ class ProfileView extends HookWidget {
         title: Text(
           'My Profile',
           style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 19
-          ),
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 19),
         ),
       ),
       body: isLoading
@@ -100,14 +98,15 @@ class ProfileView extends HookWidget {
                       // crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding:
-                              EdgeInsets.only(left: 10,right: 2),
+                          padding: EdgeInsets.only(left: 10, right: 2),
                           child: Row(
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  SizedBox(height: 5,),
+                                  SizedBox(
+                                    height: 5,
+                                  ),
                                   Row(
                                     children: [
                                       // Icon(Icons.mail_outline_rounded,size: 15,color: Colors.grey,),
@@ -116,9 +115,9 @@ class ProfileView extends HookWidget {
                                         // 'anythig',
                                         ' ${profile?.profileInfo?.customerName}',
                                         style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
                                         ),
                                       ),
                                     ],
@@ -128,7 +127,9 @@ class ProfileView extends HookWidget {
                                   ),
                                   Row(
                                     children: [
-                                      SizedBox(width: 5,),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
                                       Icon(
                                         CupertinoIcons.phone,
                                         size: 17,
@@ -140,9 +141,9 @@ class ProfileView extends HookWidget {
                                       Text(
                                         ' ${profile?.profileInfo?.customerPhone}',
                                         style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black54,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black54,
                                         ),
                                       ),
                                     ],
@@ -156,8 +157,8 @@ class ProfileView extends HookWidget {
                                 decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: Colors.grey.shade400)
-                                ),
+                                    border: Border.all(
+                                        color: Colors.grey.shade400)),
                                 child: Center(
                                   child: IconButton(
                                     onPressed: () {
@@ -169,9 +170,7 @@ class ProfileView extends HookWidget {
                                               email: profile
                                                   ?.profileInfo?.customerEmail,
                                               phoneNumber: profile?.profileInfo
-                                                  ?.customerPhone
-                                          )
-                                      );
+                                                  ?.customerPhone));
                                     },
                                     icon: Icon(
                                       Icons.edit,
@@ -194,38 +193,41 @@ class ProfileView extends HookWidget {
                 SizedBox(
                   height: 10,
                 ),
-                Padding(padding: EdgeInsets.only(bottom: 10,),
-                child: Container(
-                  height: 55,
-                  width: 500,
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                    border: Border.all(color: Colors.grey.shade300)
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        CupertinoIcons.captions_bubble_fill,
-                        color: Colors.black54,
-                        size: 21,
+                Padding(
+                    padding: EdgeInsets.only(
+                      bottom: 10,
+                    ),
+                    child: Container(
+                      height: 55,
+                      width: 500,
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey.shade300)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            CupertinoIcons.captions_bubble_fill,
+                            color: Colors.black54,
+                            size: 21,
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                          Text(
+                            // 'anythig',
+                            'Help Center',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 20,),
-                      Text(
-                        // 'anythig',
-                        'Help Center',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                 )
-                ),
+                    )),
                 SizedBox(
                   height: 1,
                 ),
@@ -234,21 +236,17 @@ class ProfileView extends HookWidget {
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                   child: GestureDetector(
                     onTap: () async {
-                      final userId = await context.read(secureStorageServiceProvider).getString('id');
+                      final userId = await context
+                          .read(secureStorageServiceProvider)
+                          .getString('id');
                       // context.read(homeViewModelProvider).getOrders(int.parse('$userId'));
-                      await Navigator.pushNamed(context,
-                          AppRoutes.orders,
-                          arguments: OrdersViewArgs(
-                          customerId: userId
-                      ));
+                      await Navigator.pushNamed(context, AppRoutes.orders,
+                          arguments: OrdersViewArgs(customerId: userId));
                     },
                     child: Row(
                       children: [
-                        Icon(
-                            CupertinoIcons.cube_box,
-                            size: 22,
-                            color: Colors.black54
-                        ),
+                        Icon(CupertinoIcons.cube_box,
+                            size: 22, color: Colors.black54),
                         SizedBox(
                           width: 20,
                         ),
@@ -264,7 +262,9 @@ class ProfileView extends HookWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 1,),
+                SizedBox(
+                  height: 1,
+                ),
                 Container(
                   color: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -275,11 +275,10 @@ class ProfileView extends HookWidget {
                           .getString('id');
                       print(customerId);
                       await Navigator.pushNamed(
-                          context,
-                          AppRoutes.manageAddress,
-                          arguments: ManageAddressViewArgs(
-                              customerId: int.parse('$customerId')
-                          ),
+                        context,
+                        AppRoutes.manageAddress,
+                        arguments: ManageAddressViewArgs(
+                            customerId: int.parse('$customerId')),
                       );
                     },
                     child: Row(
@@ -295,9 +294,9 @@ class ProfileView extends HookWidget {
                         Text(
                           'Manage Addresses',
                           style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -315,7 +314,7 @@ class ProfileView extends HookWidget {
                     child: Row(
                       children: [
                         Icon(
-                         CupertinoIcons.question_diamond,
+                          CupertinoIcons.question_diamond,
                           size: 22,
                           color: Colors.black54,
                         ),
@@ -357,9 +356,9 @@ class ProfileView extends HookWidget {
                         Text(
                           'Share Localyour',
                           style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -404,7 +403,8 @@ class ProfileView extends HookWidget {
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                   child: GestureDetector(
                     onTap: () {
-                      launchURL("https://play.google.com/store/apps/details?id=com.localyour.partner");
+                      launchURL(
+                          "https://play.google.com/store/apps/details?id=com.localyour.partner");
                     },
                     child: Row(
                       children: [
@@ -428,9 +428,7 @@ class ProfileView extends HookWidget {
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 1
-                ),
+                SizedBox(height: 1),
                 Container(
                   color: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -440,27 +438,26 @@ class ProfileView extends HookWidget {
                     },
                     child: Row(
                       children: [
-                        Icon(
-                          CupertinoIcons.money_dollar_circle,
-                          size: 22,
-                            color: Colors.black54
-                        ),
+                        Icon(CupertinoIcons.money_dollar_circle,
+                            size: 22, color: Colors.black54),
                         SizedBox(
                           width: 20,
                         ),
                         Text(
                           'Payment Options',
                           style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 1,),
+                SizedBox(
+                  height: 1,
+                ),
                 Container(
                   color: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -470,11 +467,8 @@ class ProfileView extends HookWidget {
                     },
                     child: Row(
                       children: [
-                        Icon(
-                            CupertinoIcons.settings,
-                            size: 22,
-                            color: Colors.black54
-                        ),
+                        Icon(CupertinoIcons.settings,
+                            size: 22, color: Colors.black54),
                         SizedBox(
                           width: 20,
                         ),
@@ -490,7 +484,9 @@ class ProfileView extends HookWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 1,),
+                SizedBox(
+                  height: 1,
+                ),
                 Container(
                   color: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -530,16 +526,18 @@ class ProfileView extends HookWidget {
                         Text(
                           'Logout',
                           style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 1,),
+                SizedBox(
+                  height: 1,
+                ),
                 Container(
                   color: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -549,11 +547,8 @@ class ProfileView extends HookWidget {
                     },
                     child: Row(
                       children: [
-                        Icon(
-                            CupertinoIcons.settings,
-                            size: 22,
-                            color: Colors.black54
-                        ),
+                        Icon(CupertinoIcons.settings,
+                            size: 22, color: Colors.black54),
                         SizedBox(
                           width: 20,
                         ),
@@ -569,7 +564,9 @@ class ProfileView extends HookWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 1,),
+                SizedBox(
+                  height: 1,
+                ),
                 Container(
                   color: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -582,11 +579,8 @@ class ProfileView extends HookWidget {
                     },
                     child: Row(
                       children: [
-                        Icon(
-                            CupertinoIcons.settings,
-                            size: 22,
-                            color: Colors.black54
-                        ),
+                        Icon(CupertinoIcons.settings,
+                            size: 22, color: Colors.black54),
                         SizedBox(
                           width: 20,
                         ),
@@ -602,7 +596,9 @@ class ProfileView extends HookWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 1,),
+                SizedBox(
+                  height: 1,
+                ),
                 Container(
                   color: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -610,16 +606,14 @@ class ProfileView extends HookWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => PaintingServicesView()),
+                        MaterialPageRoute(
+                            builder: (context) => PaintingServicesView()),
                       );
                     },
                     child: Row(
                       children: [
-                        Icon(
-                            CupertinoIcons.settings,
-                            size: 22,
-                            color: Colors.black54
-                        ),
+                        Icon(CupertinoIcons.settings,
+                            size: 22, color: Colors.black54),
                         SizedBox(
                           width: 20,
                         ),

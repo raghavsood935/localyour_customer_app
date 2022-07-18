@@ -14,11 +14,11 @@ import 'models.dart';
 import 'models.dart';
 import 'models.dart';
 import 'package:flutter_share/flutter_share.dart';
+
 final homeViewModelProvider = ChangeNotifierProvider<HomeViewModel>((ref) {
   final repo = ref.read(homeRepoProvider);
   return HomeViewModel(ref: ref, repo: repo);
 });
-
 
 class HomeViewModel extends ChangeNotifier {
   ProviderReference ref;
@@ -41,12 +41,11 @@ class HomeViewModel extends ChangeNotifier {
   List<ServiceDetailsModel> searchedServices = [];
   UpdateProfile? updateUser;
 
-  HomeViewModel({required this.ref, required this.repo}){
+  HomeViewModel({required this.ref, required this.repo}) {
     this.getLocations();
 
     // this.getServices();
   }
-
 
   Future getLocations() async {
     try {
@@ -54,8 +53,7 @@ class HomeViewModel extends ChangeNotifier {
       notifyListeners();
 
       locations = await repo.getLocations();
-    } catch (e){
-
+    } catch (e) {
     } finally {
       isLoading = false;
       notifyListeners();
@@ -68,15 +66,14 @@ class HomeViewModel extends ChangeNotifier {
       notifyListeners();
 
       services = await repo.getServices(locationId);
-    } catch (e){
-
+    } catch (e) {
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  Future customerProfileInfo( CustomerId customerId) async {
+  Future customerProfileInfo(CustomerId customerId) async {
     try {
       isLoading = true;
       isSuccess = false;
@@ -86,13 +83,12 @@ class HomeViewModel extends ChangeNotifier {
       ref.read(loggerProvider).e(customerId.toJson());
       customerProfile = await repo.customerProfileInfo(customerId.toJson());
 
-      if(customerProfile != null){
+      if (customerProfile != null) {
         isSuccess = true;
       } else {
         errorMsg = 'Invalid Customer';
       }
-
-    } catch (e){
+    } catch (e) {
       errorMsg = e.toString();
       isSuccess = false;
     } finally {
@@ -110,7 +106,7 @@ class HomeViewModel extends ChangeNotifier {
       ref.read(loggerProvider).e(addAddress.toJson());
       await repo.addAddress(addAddress.toJson());
       isSuccess = true;
-    } catch (e){
+    } catch (e) {
       errorMsg = 'wrong data';
       isSuccess = false;
     } finally {
@@ -126,9 +122,10 @@ class HomeViewModel extends ChangeNotifier {
       errorMsg = '';
       notifyListeners();
       // ref.read(loggerProvider).e(serviceName, locationName, subLocation);
-      serviceDetailsModel =  await repo.getServiceDetails(serviceName, locationName, subLocation);
+      serviceDetailsModel =
+          await repo.getServiceDetails(serviceName, locationName, subLocation);
       isSuccess = true;
-    } catch (e){
+    } catch (e) {
       errorMsg = 'wrong data';
       isSuccess = false;
     } finally {
@@ -143,8 +140,7 @@ class HomeViewModel extends ChangeNotifier {
       notifyListeners();
 
       allAddresses = await repo.getCustomerAddresses(customerId);
-    } catch (e){
-
+    } catch (e) {
     } finally {
       isLoading = false;
       notifyListeners();
@@ -160,7 +156,7 @@ class HomeViewModel extends ChangeNotifier {
       ref.read(loggerProvider).e(editAddress.toJson());
       await repo.editAddress(editAddress.toJson());
       isSuccess = true;
-    } catch (e){
+    } catch (e) {
       errorMsg = 'wrong data';
       isSuccess = false;
     } finally {
@@ -170,7 +166,6 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   Future addToCart(AddToCartModel addToCartModel) async {
-
     try {
       isLoading = true;
       isSuccess = false;
@@ -179,8 +174,7 @@ class HomeViewModel extends ChangeNotifier {
       ref.read(loggerProvider).e(addToCartModel.toJson());
       await repo.addToCart(addToCartModel.toJson());
       isSuccess = true;
-
-    } catch (e){
+    } catch (e) {
       errorMsg = 'wrong data';
       isSuccess = false;
     } finally {
@@ -195,24 +189,25 @@ class HomeViewModel extends ChangeNotifier {
       notifyListeners();
 
       cartItems = await repo.getCartItems(customerId);
-    } catch (e){
-
+    } catch (e) {
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  Future decreaseCartItemQuantity(DecreaseCartItemQuantityModel decreaseCartItemQuantityModel) async {
+  Future decreaseCartItemQuantity(
+      DecreaseCartItemQuantityModel decreaseCartItemQuantityModel) async {
     try {
       isLoading = true;
       isSuccess = false;
       errorMsg = '';
       notifyListeners();
       ref.read(loggerProvider).e(decreaseCartItemQuantityModel.toJson());
-      await repo.decreaseCartItemQuantity(decreaseCartItemQuantityModel.toJson());
+      await repo
+          .decreaseCartItemQuantity(decreaseCartItemQuantityModel.toJson());
       isSuccess = true;
-    } catch (e){
+    } catch (e) {
       errorMsg = 'wrong data';
       isSuccess = false;
     } finally {
@@ -221,7 +216,8 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  Future deleteCartItem(DecreaseCartItemQuantityModel decreaseCartItemQuantityModel) async {
+  Future deleteCartItem(
+      DecreaseCartItemQuantityModel decreaseCartItemQuantityModel) async {
     try {
       isLoading = true;
       isSuccess = false;
@@ -230,7 +226,7 @@ class HomeViewModel extends ChangeNotifier {
       ref.read(loggerProvider).e(decreaseCartItemQuantityModel.toJson());
       await repo.deleteCartItem(decreaseCartItemQuantityModel.toJson());
       isSuccess = true;
-    } catch (e){
+    } catch (e) {
       errorMsg = 'wrong data';
       isSuccess = false;
     } finally {
@@ -248,7 +244,7 @@ class HomeViewModel extends ChangeNotifier {
       ref.read(loggerProvider).e(deleteAddressModel.toJson());
       await repo.deleteAddress(deleteAddressModel.toJson());
       isSuccess = true;
-    } catch (e){
+    } catch (e) {
       errorMsg = 'wrong data';
       isSuccess = false;
     } finally {
@@ -265,8 +261,7 @@ class HomeViewModel extends ChangeNotifier {
       orders = await repo.getOrders(customerId);
       // notifyListeners();
       // print('11 + ${orders?[0].customerName}');
-    } catch (e){
-
+    } catch (e) {
     } finally {
       isLoading = false;
       notifyListeners();
@@ -279,8 +274,7 @@ class HomeViewModel extends ChangeNotifier {
       notifyListeners();
 
       searchedLocation = await repo.getSearchedLocation(searchString);
-    } catch (e){
-
+    } catch (e) {
     } finally {
       isLoading = false;
       notifyListeners();
@@ -292,9 +286,9 @@ class HomeViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      searchedServices = await repo.getSearchedService(searchString, locationId);
-    } catch (e){
-
+      searchedServices =
+          await repo.getSearchedService(searchString, locationId);
+    } catch (e) {
     } finally {
       isLoading = false;
       notifyListeners();
@@ -310,7 +304,7 @@ class HomeViewModel extends ChangeNotifier {
       ref.read(loggerProvider).e(createOrderModel.toJson());
       await repo.createOrder(createOrderModel.toJson());
       isSuccess = true;
-    } catch (e){
+    } catch (e) {
       errorMsg = 'wrong data';
       isSuccess = false;
     } finally {
@@ -327,9 +321,11 @@ class HomeViewModel extends ChangeNotifier {
       notifyListeners();
       ref.read(loggerProvider).e(updateProfile.toJson());
       updateUser = await repo.editProfile(updateProfile.toJson());
-      await ref.read(secureStorageServiceProvider).setString('token', updateUser!.token!);
+      await ref
+          .read(secureStorageServiceProvider)
+          .setString('token', updateUser!.token!);
       isSuccess = true;
-    } catch (e){
+    } catch (e) {
       errorMsg = 'wrong data';
       isSuccess = false;
     } finally {

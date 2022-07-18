@@ -1,9 +1,14 @@
+import 'package:app/network_files/models.dart';
+import 'package:app/network_files/view_model.dart';
 import 'package:app/router.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import '../secure_storage.dart';
 
 class AddLocation extends StatefulWidget {
   const AddLocation({Key? key}) : super(key: key);
@@ -189,8 +194,45 @@ class _AddLocationState extends State<AddLocation> {
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
                             )),
-                        onTap: () {
-                          Navigator.pushNamed(context, AppRoutes.homePage);
+                        onTap: () async {
+                          final userId = await context
+                              .read(secureStorageServiceProvider)
+                              .getString('id');
+                          await Navigator.pushNamedAndRemoveUntil(context,
+                                  AppRoutes.homePage, ModalRoute.withName('/'))
+                              .then((value) => context
+                                  .read(homeViewModelProvider)
+                                  .getCartItems(int.parse('$userId')))
+                              .then((value) => context
+                                  .read(homeViewModelProvider)
+                                  .customerProfileInfo(CustomerId(
+                                      customerID: int.parse('$userId'))));
+                        },
+                      ),
+                      SizedBox(
+                        height: 50,
+                      ),
+                      InkWell(
+                        child: Text('Continue',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 193, 36, 45),
+                              fontFamily: GoogleFonts.poppins().fontFamily,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            )),
+                        onTap: () async {
+                          final userId = await context
+                              .read(secureStorageServiceProvider)
+                              .getString('id');
+                          await Navigator.pushNamedAndRemoveUntil(context,
+                                  AppRoutes.homePage, ModalRoute.withName('/'))
+                              .then((value) => context
+                                  .read(homeViewModelProvider)
+                                  .getCartItems(int.parse('$userId')))
+                              .then((value) => context
+                                  .read(homeViewModelProvider)
+                                  .customerProfileInfo(CustomerId(
+                                      customerID: int.parse('$userId'))));
                         },
                       ),
                     ],
