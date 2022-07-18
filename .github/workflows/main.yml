@@ -1,0 +1,201 @@
+on:
+  push:
+    branches: [ master_kk ]
+#  pull_request:
+#    branches: [ master ]
+
+name: Build | Sonarqube | Distribute
+
+env:
+  JDK_VERSION: 1.8.x
+  FLUTTER_VERSION: 2.0.x
+  ANDROID_BUILD_NAME_APK: app-release.apk
+  ANDROID_BUILD_NAME_AAB: app-release.aab
+  IOS_BUILD_NAME: Runner.app
+
+jobs:
+  build_and_distribute_android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo HOME=$HOME >> $GITHUB_ENV
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ env.JDK_VERSION }}
+      - name: Set up ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.7
+      - name: Set up node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+      - name: Install firebase CLI
+        run: npm install -g firebase-tools
+      - name: Bundle install
+        run: cd ./android && bundle install
+      - name: Create android keystore
+        run: |
+          mkdir -p $HOME/.keystores
+          echo "${{ secrets.KEYSTORE_FILE_B64 }}" | base64 --decode > $HOME/.keystores/release.jks
+      - uses: subosito/flutter-action@v1.4.0
+        with:
+          #flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter test
+      - name: Build Android APK
+        run: flutter build apk -t lib/main.dart --release
+        env:
+          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEYSTORE_FILE: ${{ env.HOME }}/.keystores/release.jks
+      #- run: curl -sL https://firebase.tools | bash
+      #- run: npm install -g firebase-tools
+      - name: Fastlane - firebase app distribution
+        run: |
+          cd ./android && bundle exec fastlane distribute_to_firebase
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          APK_FILE: ../build/app/outputs/flutter-apk/${{ env.ANDROID_BUILD_NAME_APK }}
+      - name: Build Android AAB
+        run: flutter build appbundle -t lib/main.dart --release
+        env:
+          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEYSTORE_FILE: ${{ env.HOME }}/.keystores/release.jks
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: apk-build
+          path: build/app/outputs/flutter-apk/${{ env.ANDROID_BUILD_NAME_APK }}
+      - name: Upload Android AAB
+        uses: actions/upload-artifact@v2
+        with:
+          name: aab-build
+          path: build/app/outputs/bundle/devRelease/${{ env.ANDROID_BUILD_NAME_AAB }}
+
+      - name: Notify Slack
+        uses: asconsoft/action-slack@v4.0.1
+        with:
+          channel: '#build'
+          if_mention: failure,cancelled
+          status: ${{ job.status }}
+          #fields: repo,message,commit,author,action,eventName,ref,workflow # selectable (default: repo,message)
+          fields: workflow,job,commit,repo,ref,author
+          text_success: ':sparkles: `gintaa-app` is successfully build for :android: ! :eyes:'
+          text_failure: ':boom: `gintaa-app` failed to build for :android: :thumbsdown:'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # optional
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        #if: always() # Pick up events even if the job fails or is canceled.
+        if: false
+
+  build_and_distribute_ios:
+    name: Build and distribute iOS
+    if: false
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ env.JDK_VERSION }}
+      - name: Bundle install
+        run: cd ./ios && bundle install
+      - name: Setup flutter
+        uses: subosito/flutter-action@v1.4.0
+        with:
+          #flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+      - name: Setup SSH Keys and known_hosts for fastlane match
+        run: |
+          SSH_PATH="$HOME/.ssh"
+          mkdir -p "$SSH_PATH"
+          touch "$SSH_PATH/known_hosts"
+          echo "$PRIVATE_KEY" > "$SSH_PATH/id_rsa"
+          chmod 700 "$SSH_PATH"
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          chmod 600 "$SSH_PATH/known_hosts"
+          chmod 600 "$SSH_PATH/id_rsa"
+          eval $(ssh-agent)
+          ssh-add "$SSH_PATH/id_rsa"
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - run: flutter pub get
+      - run: flutter test
+      - name: Build iOS with no-codesign
+        run: flutter build ios --release --no-codesign -t lib/main.dart
+      - name: Fastlane - code-signing and distribution
+        run: |
+          cd ./ios && bundle exec fastlane ios_dev_app
+        env:
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          ITC_TEAM_ID: ${{ secrets.ITC_TEAM_ID }}
+          FASTLANE_APP_IDENTIFIER: com.asconsoft.gintaa.dev
+          FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
+          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+          #FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }} # this is required for TestFlight
+          FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }} # valid for 1 month, need to update monthly
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          #GIT_AUTHORIZATION: ${{ secrets.GIT_AUTHORIZATION }}
+          MATCH_TYPE: development
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_KEYCHAIN_NAME: ${{ secrets.MATCH_KEYCHAIN_NAME }}
+          MATCH_KEYCHAIN_PASSWORD: ${{ secrets.MATCH_KEYCHAIN_PASSWORD }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID_DEV }}
+          #DELIVER_ITMSTRANSPORTER_ADDITIONAL_UPLOAD_PARAMETERS: ${{ secrets.DELIVER_ITMSTRANSPORTER_ADDITIONAL_UPLOAD_PARAMETERS }}
+      - name: Upload iOS AAP
+        uses: actions/upload-artifact@v2
+        with:
+          name: app-build
+          path: build/ios/iphoneos/${{ env.IOS_BUILD_NAME }}
+      - name: Notify Slack
+        uses: asconsoft/action-slack@v4.0.1
+        with:
+          channel: '#build'
+          if_mention: failure,cancelled
+          status: ${{ job.status }}
+          #fields: repo,message,commit,author,action,eventName,ref,workflow # selectable (default: repo,message)
+          fields: workflow,job,commit,repo,ref,author
+          text_success: ':sparkles: `gintaa-app` is successfully build for :ios: :eyes:'
+          text_failure: ':boom: `gintaa-app` failed to build for :ios: :thumbsdown:'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # optional
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        if: always() # Pick up events even if the job fails or is canceled.
+
+  sonarqube:
+    name: Sonarqube analyzer
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ env.JDK_VERSION }}
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter test --machine > tests.output
+      - run: flutter test --coverage
+      - run: wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.0.0.1744-linux.zip -P /opt
+      - run: unzip /opt/sonar-scanner-cli-4.0.0.1744-linux.zip -d /opt
+      - run: echo "/opt/sonar-scanner-4.0.0.1744-linux/bin" >> $GITHUB_PATH
+      - name: Run sonar-scanner
+        run: |-
+          sonar-scanner \
+          -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }} \
+          -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }} \
+          -Dsonar.projectKey=gintaa-app \
+          -Dsonar.branch.name=${GITHUB_REF#refs/heads/} \
+          -Dsonar.sources=lib \
+          -Dsonar.tests=test

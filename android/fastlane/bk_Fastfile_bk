@@ -1,0 +1,61 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+platform :android do
+  desc "Distribute to Firebase app distribution"
+  lane :distribute_to_firebase do
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID"],
+      release_notes: "Medco app distribution for internal groups! :tada:",
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+      apk_path: ENV["APK_FILE"],
+      groups: "qa,developer-mobile,mentor-internal"
+    )
+  end
+
+  desc "Distribute to Google App Store"
+  lane :distribute_to_playstore do
+    if is_ci?
+      supply(
+        track: "Internal",
+        json_key_data: ENV["PLAYSTORE_JSON_KEY_DATA"],
+        aab: ENV["AAB_FILE"]
+      )
+    else
+      supply(
+        track: "Internal",
+        aab: ENV["AAB_FILE"]
+      )
+    end
+  end
+
+  desc "Distribute to Google App Store for internal sharing"
+  lane :distribute_to_playstore_internal do
+    upload_to_play_store_internal_app_sharing(
+      apk: ENV["APK_FILE"]
+    )
+  end
+
+  desc "Notify to Slack in #general channel"
+  lane :notify_slack do
+    slack(
+      message: "App successfully uploaded to Firebase app distribution.",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"]
+    )
+  end
+end
